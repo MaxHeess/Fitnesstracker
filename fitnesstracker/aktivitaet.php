@@ -46,6 +46,15 @@ $aktivitaeten = [];
 while ($row = $result->fetch_assoc()) {
     $aktivitaeten[] = $row;
 }
+
+$stmt2 = $conn->prepare("SELECT date, SUM(duration) AS total_duration, SUM(calories) AS total_calories FROM activities WHERE user_id = ? GROUP BY date ORDER BY date DESC");
+$stmt2->bind_param("i", $user_id);
+$stmt2->execute();
+$result2 = $stmt2->get_result();
+$tagesuebersicht = [];
+while ($row = $result2->fetch_assoc()) {
+    $tagesuebersicht[] = $row;
+}
 ?>
 
 <!DOCTYPE html>
@@ -105,6 +114,18 @@ while ($row = $result->fetch_assoc()) {
             </tr>
         <?php endforeach; ?>
     </table><br>
+
+    <h2>Übersicht pro Tag</h2>
+    <table>
+        <tr><th>Datum</th><th>Gesamtdauer</th><th>Gesamtkalorien</th></tr>
+        <?php foreach ($tagesuebersicht as $tag): ?>
+            <tr>
+                <td><?= htmlspecialchars($tag['date']) ?></td>
+                <td><?= htmlspecialchars($tag['total_duration']) ?> Min</td>
+                <td><?= htmlspecialchars($tag['total_calories']) ?> kcal</td>
+            </tr>
+        <?php endforeach; ?>
+    </table>
 
 </body>
 </html>
