@@ -113,7 +113,7 @@ while ($row = $result2->fetch_assoc()) {
                 </td>
             </tr>
         <?php endforeach; ?>
-    </table><br>
+    </table><br><br>
 
     <h2>Übersicht pro Tag</h2>
     <table>
