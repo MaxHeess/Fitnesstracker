@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="de">
 <head>
     <meta charset="UTF-8">
@@ -35,21 +35,31 @@
         $gender = $_POST['gender'];
         $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
 
-        $stmt = $conn->prepare("INSERT INTO users (name, age, height_cm, gender, password) VALUES (?, ?, ?, ?, ?)");
-        
-        if (!$stmt) {
-            echo "<p style='color:red;'>Fehler bei der Vorbereitung: " . $conn->error . "</p>";
-        } else {
-            $stmt->bind_param("sidss", $name, $age, $height, $gender, $password);
-            
-            if ($stmt->execute()) {
-                echo "<p style='color:green;'>Registrierung erfolgreich. <br><br> <a href='login.php'>Jetzt einloggen</a></p>";
-            } else {
-                echo "<p style='color:red;'>Fehler bei der Registrierung: " . $stmt->error . "</p>";
-            }
+        $check = $conn->prepare("SELECT id FROM users WHERE name = ?");
+        $check->bind_param("s", $name);
+        $check->execute();
+        $check->store_result();
 
-            $stmt->close();
+        if ($check->num_rows > 0) {
+            echo "<p style='color:red;'>Der Name ist bereits vergeben. Bitte wähle einen anderen.</p>";
+        } else {
+            $stmt = $conn->prepare("INSERT INTO users (name, age, height_cm, gender, password) VALUES (?, ?, ?, ?, ?)");
+
+            if (!$stmt) {
+                echo "<p style='color:red;'>Fehler bei der Vorbereitung: " . $conn->error . "</p>";
+            } else {
+                $stmt->bind_param("sidss", $name, $age, $height, $gender, $password);
+
+                if ($stmt->execute()) {
+                    echo "<p style='color:green;'>Registrierung erfolgreich. <br><br> <a href='login.php'>Jetzt einloggen</a></p>";
+                } else {
+                    echo "<p style='color:red;'>Fehler bei der Registrierung: " . $stmt->error . "</p>";
+                }
+
+                $stmt->close();
+            }
         }
+        $check->close();
     }
     ?>
 
