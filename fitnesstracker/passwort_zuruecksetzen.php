@@ -43,6 +43,7 @@ if ($token) {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Passwort zurücksetzen</title>
+    <link rel="icon" href="images/logo.png" type="image/png">
     <link rel="stylesheet" href="style.css" />
 </head>
 <body>
