@@ -56,6 +56,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <form method="POST">
         Name: <input type="text" name="name"><br>
         Passwort: <input type="password" name="password"><br>
+        <a href="passwort_vergessen.php" class="delete-link">Passwort vergessen?</a><br><br>
         <button type="submit">Einloggen</button><br>
         Neu hier?<br><br>
         <button type="button" onclick="window.location.href='register.php'">Registrieren</button>
