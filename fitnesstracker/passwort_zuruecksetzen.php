@@ -17,16 +17,22 @@ if ($token) {
         $token_valid = true;
 
         if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["new_password"])) {
-            $new_password = password_hash($_POST["new_password"], PASSWORD_DEFAULT);
+            $new_password_input = $_POST["new_password"];
 
-            $stmt = $conn->prepare("UPDATE users SET password = ?, reset_token = NULL, reset_expires = NULL WHERE id = ?");
-            $stmt->bind_param("si", $new_password, $user['id']);
-            if ($stmt->execute()) {
-                $nachricht = "Dein Passwort wurde erfolgreich geändert.";
-                $token_valid = false;
-                $show_button = true; 
+            if (password_verify($new_password_input, $user['password'])) {
+                $nachricht = "<p style='color: red;'>Das neue Passwort darf nicht gleich dem alten sein.</p>";
             } else {
-                $nachricht = "Fehler beim Zurücksetzen des Passworts.";
+                $new_password_hash = password_hash($new_password_input, PASSWORD_DEFAULT);
+
+                $stmt = $conn->prepare("UPDATE users SET password = ?, reset_token = NULL, reset_expires = NULL WHERE id = ?");
+                $stmt->bind_param("si", $new_password_hash, $user['id']);
+                if ($stmt->execute()) {
+                    $nachricht = "<p>Dein Passwort wurde erfolgreich geändert.</p><br>";
+                    $token_valid = false;
+                    $show_button = true;
+                } else {
+                    $nachricht = "Fehler beim Zurücksetzen des Passworts.";
+                }
             }
         }
     } else {
@@ -52,22 +58,22 @@ if ($token) {
 
 <h2>Passwort zurücksetzen</h2>
 
-<?php if ($nachricht): ?>
-    <p><?= htmlspecialchars($nachricht) ?></p>
-    <?php if ($show_button): ?>
-        <div>
-            <a href="login.php" class="delete-link">Zurück zum Login</a>
-        </div>
+    <?php if ($nachricht): ?>
+        <?= $nachricht ?>
+        <?php if ($show_button): ?>
+            <div>
+                &nbsp;&nbsp;<a href='login.php'>Zurück zum Login</a>
+            </div>
+        <?php endif; ?>
     <?php endif; ?>
-<?php endif; ?>
 
-<?php if ($token_valid): ?>
-    <form method="POST">
-        <label>Neues Passwort:</label><br />
-        <input type="password" name="new_password" required /><br /><br />
-        <button type="submit">Passwort speichern</button>
-    </form>
-<?php endif; ?>
+    <?php if ($token_valid): ?>
+        <form method="POST">
+            <label>Neues Passwort:</label><br />
+            <input type="password" name="new_password" required /><br /><br />
+            <button type="submit">Passwort speichern</button>
+        </form>
+    <?php endif; ?>
 
 </body>
 </html>
