@@ -1,13 +1,13 @@
-﻿<?php
+<?php
 include 'db.php';
 
 $nachricht = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $name = $_POST['name'];
+    $email = $_POST['email'];
 
-    $stmt = $conn->prepare("SELECT * FROM users WHERE name = ?");
-    $stmt->bind_param("s", $name);
+    $stmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
+    $stmt->bind_param("s", $email);
     $stmt->execute();
     $result = $stmt->get_result();
     $user = $result->fetch_assoc();
@@ -20,11 +20,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt->execute();
 
         $link = "http://" . $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']) . "/passwort_zuruecksetzen.php?token=$token";
-        $nachricht = "
-            <p>Ein Link zum Zurücksetzen wurde erzeugt.<br><br> Er ist 1 Stunde gültig.</p>
-            <p><a href=\"$link\" class=\"delete-link\">Hier klicken</a></p><br>";
+
+        $to = $user['email'];
+        $subject_raw = "Passwort zurücksetzen";
+        $subject = "=?UTF-8?B?" . base64_encode($subject_raw) . "?=";
+
+        $message = "Hallo " . $user['name'] . ",\n\n\n";
+        $message .= "Klicke auf den folgenden Link, um dein Passwort zurückzusetzen:\n$link\n\n";
+        $message .= "Der Link ist 1 Stunde gültig.\n\n\n";
+        $message .= "Viele Grüße\n\n";  
+        $message .= "Dein MotionLog-Team";
+
+        $headers = "From: info@maxheess.de\r\n";
+        $headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
+
+mail($to, $subject, $message, $headers);
+
+        $nachricht = "<p>Ein Link zum Zurücksetzen wurde an deine E-Mail-Adresse gesendet.<br><br> Er ist 1 Stunde gültig.</p>";
     } else {
-        $nachricht = "<p style='color: red;'>Benutzer nicht gefunden.</p>";
+        $nachricht = "<p style='color: red;'>E-Mail-Adresse nicht gefunden.</p>";
     }
 }
 ?>
@@ -32,28 +46,28 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Passwort vergessen</title>
-    <link rel="icon" href="images/logo.png" type="image/png">
-    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="images/logo.png" type="image/png" />
+    <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-<?php include 'header.php'; ?>
-    
-<h2>Passwort vergessen</h2>
+    <?php include 'header.php'; ?>
 
-<?php if ($nachricht): ?>
-    <p><?= $nachricht ?></p>
-<?php endif; ?>
+    <h2>Passwort vergessen</h2>
 
-<form method="POST">
-    Gib deinen Benutzernamen ein:<br>
-    <input type="text" name="name" required><br><br>
-    <button type="submit">Zurücksetzen-Link generieren</button><br>
-    <button type="button" onclick="window.location.href='login.php'">Zurück zum Login</button>
-</form>
+    <?php if ($nachricht): ?>
+        <p><?= $nachricht ?></p>
+    <?php endif; ?>
+
+    <form method="POST">
+        Gib deine E-Mail-Adresse ein:<br>
+        <input type="email" name="email" required><br><br>
+        <button type="submit">Zurücksetzen-Link generieren</button><br>
+        <button type="button" onclick="window.location.href='login.php'">Zurück zum Login</button>
+    </form>
 
 </body>
 </html>
